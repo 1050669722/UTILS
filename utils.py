@@ -5,6 +5,7 @@ import numpy as np
 import shutil
 import colorsys
 from PIL import Image, ImageDraw, ImageFont
+from collections import Iterable
 
 def assignScale(ori_func):
     def new_func(name, img, scale=1.0):
@@ -114,7 +115,20 @@ def splitGroups(List, num):
     return idxes
 
 
+def tryagain(ori_func):
+    # print(dir(ori_func))
+    # print(ori_func.__code__.co_varnames) #所有变量名，不只是参数
+    def new_func(path):
+        try:
+            ori_func(path)
+        except:
+            new_func(path)
+    return new_func
+
+
+@tryagain
 def updatepath(path):
+    # print(locals())
     # assert os.path.isdir(path), "Except {} be a path.".format(path)
     if os.path.exists(path):
         shutil.rmtree(path)
@@ -161,6 +175,35 @@ def PILBBox(pic, category_idx, bbox):
 
     # 输出数组格式的图片
     return Image2Array(image)
+
+
+def appendJSON(jsonfile, newinfos):
+    """
+    向 指定json文件中 添加 指定信息
+    :param jsonfile: 指定json文件路径[这里json文件中根数据类型是list]
+    :param info: 指定信息[这里主要是字典]
+    :return: None | in-place修改指定json文件
+    """
+    # 读取原本json文件中的信息
+    with open(jsonfile, mode='r') as f:
+        infos = json.load(f)
+
+    # 断言这信息为list类型
+    assert isinstance(infos, list), "Except infos in {} be a list, but got {}.".format(jsonfile, type(infos))
+
+    # 添加新的信息
+    # if isinstance(newinfos, Iterable):
+    if isinstance(newinfos, list) or isinstance(newinfos, tuple):
+        for newinfo in newinfos:
+            infos.append(newinfo)
+    else:
+        infos.append(newinfos)
+
+    # 覆写 原.json文件
+    with open(jsonfile, mode='w') as f:
+        json.dump(infos, f, indent=4, ensure_ascii=False)
+
+    return None
 
 
 if __name__ == "__main__":
