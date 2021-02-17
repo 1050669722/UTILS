@@ -206,5 +206,37 @@ def appendJSON(jsonfile, newinfos):
     return None
 
 
+def panpic(img, img_t):
+    img, img_t = img.astype("uint8"), img_t.astype("uint8")
+    shift, _, _ = phase_cross_correlation(img, img_t)  # 计算偏移量？
+    print("shift: {}".format(shift))
+    ty = int(shift[0])
+    tx = int(shift[1])
+    M = np.float32([[1, 0, tx], [0, 1, ty]]) #好像是个矩阵
+    img_t = cv2.warpAffine(img_t, M, (img_t.shape[1], img_t.shape[0])) #仿射变换，M - 表示平移或旋转变换的2x3矩阵
+    residual = img - img_t #原图像 - 平移后的图像
+
+    # 展示
+    cv2.namedWindow('img_t', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('img_t', 500, 500)
+    cv2.moveWindow('img_t', 650, 100)
+    cv2.imshow('img_t', img_t) #平移后的图像
+
+    cv2.namedWindow('img', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("img", 500, 500)
+    cv2.moveWindow('img', 100, 100)
+    cv2.imshow('img', img) #原图像
+
+    cv2.namedWindow('residual', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("residual", 500, 500)
+    cv2.imshow('residual', residual) #残差图像
+
+    cv2.waitKey(300)
+
+    # return residual
+    img_t = img_t.astype("float64")
+    return img_t
+
+
 if __name__ == "__main__":
     print(becomesMultiple(6000, 4))
