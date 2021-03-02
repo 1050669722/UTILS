@@ -4,8 +4,37 @@ import json
 import numpy as np
 import shutil
 import colorsys
+import pickle
 from PIL import Image, ImageDraw, ImageFont
 from collections import Iterable
+from skimage.registration import phase_cross_correlation
+
+
+def save(obj, name):
+    """
+    保存
+    :param obj: 对象
+    :param name: 名字
+    :return: None
+    """
+    if not name.endswith('.pkl'):
+        name += '.pkl'
+    with open(name, 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+    return None
+
+
+def load(name):
+    """
+    读取
+    :param name: 名字
+    :return: 对象
+    """
+    if not name.endswith('.pkl'):
+        name += '.pkl'
+    with open(name, 'rb') as f:
+        return pickle.load(f)
+
 
 def assignScale(ori_func):
     def new_func(name, img, scale=1.0):
